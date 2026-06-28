@@ -1,20 +1,29 @@
-import { Locator} from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export class HomePage extends BasePage {
+    constructor(page: Page) {
+        super(page);
+    }
 
     get verifyHomePageHeading(): Locator {
-        // return this.page.getByRole('heading', { name: /Welcome\s*back123/i }); //regex  for case insensitive match and to ignore any whitespace between "Welcome" and "back"
-        return this.page.getByRole('heading', { name: /Welcome\s*back/i }); //Restore working regex
+        return this.page.getByRole('heading', { name: /Welcome\s*back/i });
+    }
+
+    get adminMenuButton(): Locator {
+        return this.page.getByRole('button', { name: 'G Menu ▼' });
+    }
+
+    get adminPanelButton(): Locator {
+        return this.page.getByRole('button', { name: '🔧 Admin Panel' });
     }
 
     async verifyHomePageIsDisplayed() {
-        await this.basePageVerifyElementIsVisible(this.verifyHomePageHeading);    
+        await this.waitForElement(this.verifyHomePageHeading);
     }
-    basePageVerifyElementIsVisible(verifyHomePageHeading: Locator) {
-        throw new Error('Method not implemented.');
-    }
-    async navigateToAdminPanel(){
-        
+
+    async navigateToAdminPanel() {
+        await this.clickElement(this.adminMenuButton);
+        await this.clickElement(this.adminPanelButton);
     }
 }
