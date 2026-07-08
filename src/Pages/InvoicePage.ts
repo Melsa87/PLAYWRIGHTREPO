@@ -1,10 +1,12 @@
 import { expect, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 
+
 export class InvoicePage extends BasePage {
   constructor(page: Page) {
     super(page);
   }
+
 
   async openAdminPanel() {
     await this.page.getByRole('button', { name: /Menu/i }).click();
@@ -49,11 +51,41 @@ export class InvoicePage extends BasePage {
   }
 
   async clickAddCourse() {
-    await this.page.getByRole('button', { name: '➕ Add Course' }).click();
+  const addCourseButton = this.page.getByRole('button', { name: /Add Course/i });
+
+  await addCourseButton.waitFor({ state: 'visible' });
+  await expect(addCourseButton).toBeEnabled();
+
+  await addCourseButton.click({ force: true });
+ }
+
+ async addCourse(courseName: string) {
+  const dropdowns = this.page.getByRole('cell', { name: /Select course/i }).getByRole('combobox');
+
+  await dropdowns.last().waitFor({ state: 'visible' });
+
+  await dropdowns
+    .last()
+    .selectOption({ label: courseName });
+ }
+
+ async addFourSameCourses() {
+  const courseName = 'API Testing with Postman – Fundamentals';
+
+  // Click Add Course 4 times
+  for (let i = 0; i < 4; i++) {
+    await this.clickAddCourse();
+    await this.page.waitForTimeout(500);
   }
 
-  async addCourse(course: string) {
-    await this.page.getByRole('combobox', { name: 'Select course' }).selectOption(course);
+  // Select same course in each dropdown
+  const dropdowns = this.page.getByRole('combobox');
+  for (let i = 0; i < 4; i++) {
+    await dropdowns
+      .nth(i)
+      .selectOption({ label: courseName });
+  }
+
   }
 
   async selectCourseAt(index: number, optionValue: string) {

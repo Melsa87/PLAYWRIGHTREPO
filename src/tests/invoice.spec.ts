@@ -1,11 +1,12 @@
 import { test, expect } from '../fixtures/CustomFixtures';
 import { TestData } from '../Data.ts/TestData';
 
+
 const courses = [
-  'Testing Course',
   'API Testing with Postman – Fundamentals',
   'API Testing with Postman – Fundamentals',
-  'Testing Course',
+  'API Testing with Postman – Fundamentals',
+  'API Testing with Postman – Fundamentals',
 ];
 
 const clientName = 'Melsa Pty Ltd';
