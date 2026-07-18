@@ -1,6 +1,5 @@
-import { test, expect } from '../fixtures/CustomFixtures';
+import { test } from '../fixtures/CustomFixtures';
 import { TestData } from '../Data.ts/TestData';
-
 
 const courses = [
   'API Testing with Postman – Fundamentals',
@@ -14,32 +13,41 @@ const clientAddress = '1091991 Cape Town';
 const invoiceDescription = 'Automated invoice for self client';
 const expectedTotal = 'R2800';
 
-test('create invoice to self client and verify total', async ({ loginPage, invoicePage }) => {
+test('Create invoice for self client', async ({
+  loginPage,
+  invoicePage,
+}) => {
 
-  // LOGIN
-  await loginPage.performFullLogin(TestData.username, TestData.password);
+  // Login
+  await loginPage.performFullLogin(
+    TestData.username,
+    TestData.password
+  );
 
-  // NAVIGATION
+  // Navigate
   await invoicePage.openAdminPanel();
   await invoicePage.navigateToInvoicesPage();
   await invoicePage.clickNewInvoice();
 
-  // CLIENT DETAILS
-  await invoicePage.enterClientDetails(clientName, clientAddress);
+  // Invoice Details
+  await invoicePage.enterClientDetails(
+    clientName,
+    clientAddress
+  );
 
-  // ADD COURSES + SELECT COURSES (CLEAN LOOP)
-  for (const course of courses) {
-    await invoicePage.clickAddCourse();
-    await invoicePage.addCourse(course);
-  }
+  await invoicePage.addCourses(courses);
 
-  // INVOICE DETAILS
   await invoicePage.enterDescription(invoiceDescription);
+
   await invoicePage.verifyInvoiceTotal(expectedTotal);
+
   await invoicePage.setDueDateToLastDayOfJune();
+
   await invoicePage.selectStatus('paid');
 
-  // CREATE + VERIFY
+  // Submit
   await invoicePage.clickCreateInvoice();
+
+  // Verify
   await invoicePage.verifyInvoiceCreated(clientName);
 });

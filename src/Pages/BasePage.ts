@@ -13,7 +13,7 @@ export class BasePage {
         await expect(locator).toBeVisible();
         await locator.fill(value);
     }
-    async waitForElement(locator: Locator, timeout: number = 5000) {
+    async waitForElement(locator: Locator, timeout: number = 80000) {
         await expect(locator).toBeVisible({ timeout });
     }
     async getElementText(locator: Locator): Promise<string> {

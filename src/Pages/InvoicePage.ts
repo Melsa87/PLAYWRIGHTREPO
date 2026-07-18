@@ -1,12 +1,12 @@
 import { expect, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 
-
 export class InvoicePage extends BasePage {
   constructor(page: Page) {
     super(page);
   }
 
+  // Navigation
 
   async openAdminPanel() {
     await this.page.getByRole('button', { name: /Menu/i }).click();
@@ -21,105 +21,101 @@ export class InvoicePage extends BasePage {
     await this.page.getByRole('button', { name: /New Invoice/i }).click();
   }
 
+  // Locators
+
   get clientNameInput() {
-    return this.page.getByRole('textbox', { name: /Type client name or email/i });
+    return this.page.getByRole('textbox', {
+      name: /Type client name or email/i,
+    });
   }
 
   get clientAddressInput() {
-    return this.page.getByRole('textbox', { name: /Enter client address/i });
+    return this.page.getByRole('textbox', {
+      name: /Enter client address/i,
+    });
   }
 
   get descriptionInput() {
-    return this.page.getByRole('textbox', { name: /description/i });
-  }
-
-  get courseSelectors() {
-    return this.page.getByRole('cell', { name: /Select course/i }).getByRole('combobox');
+    return this.page.getByRole('textbox', {
+      name: /description/i,
+    });
   }
 
   get dueDateInput() {
     return this.page.locator('input[type="date"]');
   }
 
-  get statusSelect() {
-    return this.page.getByRole('combobox', { name: /status/i });
+  get statusDropdown() {
+    return this.page.getByRole('combobox', { name: /status/i }).first();
   }
+
+  get addCourseButton() {
+    return this.page.getByRole('button', { name: /Add Course/i });
+  }
+
+  // Client Details
 
   async enterClientDetails(clientName: string, clientAddress: string) {
     await this.clientNameInput.fill(clientName);
     await this.clientAddressInput.fill(clientAddress);
   }
 
-  async clickAddCourse() {
-  const addCourseButton = this.page.getByRole('button', { name: /Add Course/i });
+  // Courses
 
-  await addCourseButton.waitFor({ state: 'visible' });
-  await expect(addCourseButton).toBeEnabled();
+  async addCourses(courses: string[]) {
+    for (let i = 0; i < courses.length; i++) {
 
-  await addCourseButton.click({ force: true });
- }
+      // Click Add Course
+      await this.addCourseButton.waitFor({ state: 'visible' });
+      await expect(this.addCourseButton).toBeEnabled();
+      await this.addCourseButton.click({ force: true });
+    
+      //Temporary wait to ensure the new course dropdown is rendered
+      const dropdown = this.page.locator('select').nth(i);
 
- async addCourse(courseName: string) {
-  const dropdowns = this.page.getByRole('cell', { name: /Select course/i }).getByRole('combobox');
+      const options = await dropdown.locator('option').allTextContents();
+      console.log(options);
 
-  await dropdowns.last().waitFor({ state: 'visible' });
+      // Wait for dropdowns to be available
+      await expect(this.page.locator('select').nth(i)).toBeVisible({
+        timeout: 10000,
+      });
 
-  await dropdowns
-    .last()
-    .selectOption({ label: courseName });
- }
-
- async addFourSameCourses() {
-  const courseName = 'API Testing with Postman – Fundamentals';
-
-  // Click Add Course 4 times
-  for (let i = 0; i < 4; i++) {
-    await this.clickAddCourse();
-    await this.page.waitForTimeout(500);
+      // Select course
+      await this.page
+        .locator('select')
+        .nth(i)
+        .selectOption({ label: courses[i] });
+    }
   }
 
-  // Select same course in each dropdown
-  const dropdowns = this.page.getByRole('combobox');
-  for (let i = 0; i < 4; i++) {
-    await dropdowns
-      .nth(i)
-      .selectOption({ label: courseName });
-  }
-
-  }
-
-  async selectCourseAt(index: number, optionValue: string) {
-    await this.courseSelectors.nth(index).selectOption(optionValue);
-  }
+  // Invoice Details
 
   async enterDescription(description: string) {
     await this.descriptionInput.fill(description);
   }
 
   async verifyInvoiceTotal(total: string) {
-    const normalized = total.replace(/\s+/g, '');
-    await expect(this.page.locator(new RegExp(`R\\s*${normalized.slice(1)}`))).toBeVisible();
+    await expect(this.page.getByText(total)).toBeVisible();
   }
 
   async setDueDateToLastDayOfJune(year = new Date().getFullYear()) {
-    const dueDate = `${year}-06-30`;
-    await this.dueDateInput.fill(dueDate);
+    await this.dueDateInput.fill(`${year}-06-30`);
   }
 
   async selectStatus(status: string) {
-    const statusLocator = this.statusSelect.first();
-    if (await statusLocator.count() > 0) {
-      await statusLocator.selectOption(status);
-    } else {
-      await this.page.getByRole('combobox').nth(4).selectOption(status);
-    }
+    await this.statusDropdown.selectOption(status);
   }
 
   async clickCreateInvoice() {
-    await this.page.getByRole('button', { name: /Create Invoice/i }).click();
+    await this.page.getByRole('button', {
+      name: /Create Invoice/i,
+    }).click();
   }
 
   async verifyInvoiceCreated(clientName: string) {
-    await expect(this.page.getByText(clientName)).toBeVisible({ timeout: 10000 });
+    await expect(
+      this.page.getByText(clientName)
+    ).toBeVisible({ timeout: 10000 });
   }
 }
